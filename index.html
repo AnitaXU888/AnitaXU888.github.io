@@ -247,11 +247,9 @@
       <section id="hero" class="grid min-h-screen items-center gap-12 pb-24 pt-32 lg:grid-cols-[1.05fr_.95fr]">
         <div class="reveal space-y-7">
           <p class="font-display text-sm font-extrabold uppercase tracking-[.24em] text-sage">{{ ui.heroEyebrow }}</p>
-          <h1 class="min-h-[12.5rem] font-zh text-[2.45rem] font-bold leading-[1.16] tracking-[-.04em] text-ink dark:text-white md:min-h-[18.5rem] md:text-[3.65rem]">
-            <span v-html="heroTypedHtml"></span><span class="hero-type-cursor"></span>
-          </h1>
+          <h1 class="font-zh text-[2.45rem] font-bold leading-[1.16] tracking-[-.04em] text-ink dark:text-white md:text-[3.65rem]" v-html="ui.heroTitle"></h1>
           <div class="grid gap-3 text-base font-medium leading-8 text-muted dark:text-slate-200 md:text-lg">
-            <p v-html="ui.heroIntro"></p>
+            <p class="min-h-[4rem] md:min-h-[3.5rem]"><span v-html="heroTypedHtml"></span><span class="hero-type-cursor"></span></p>
           </div>
           <div class="no-print rounded-[1.5rem] bg-white/72 p-6 shadow-soft ring-1 ring-white/70 dark:bg-darkpanel/70 dark:ring-white/10">
             <div class="flex items-center gap-3"><span class="material-symbols-outlined text-sage">psychology_alt</span><h3 class="font-display text-xl font-extrabold text-ink dark:text-white">{{ ui.matcherTitle }}</h3></div>
@@ -431,8 +429,8 @@
 
 
     const dict = {
-      zh: { download: "下载简历", contactButton: "联系我", contactPopupTitle: "我的邮箱", contactPopupHint: "欢迎通过邮件联系我，我会尽快回复。", heroEyebrow: "Data Analytics · AI Product · Business Strategy", heroTitle: "以数学之逻辑<br />解构数据之美，<br /><span class='text-sage'>在算法与商业之间</span><br />构建 AI 产品价值。", heroTypeText: "以数学之逻辑\n解构数据之美，\n在算法与商业之间\n构建 AI 产品价值。", heroIntro: "<span class='font-bold text-ink dark:text-white'>Anita XU</span>，数学背景的 AI / 数据驱动型候选人，聚焦数据商业分析与智能产品落地。", contact: "电话", email: "邮箱", matcherTitle: "AI 岗位匹配筛选器", jdPlaceholder: "粘贴职位描述，查看匹配度...", matchButton: "开始匹配", score: "综合分", matchResult: "匹配结果" },
-      en: { download: "Download CV", contactButton: "Contact me", contactPopupTitle: "My email", contactPopupHint: "Feel free to reach out by email. I will get back to you soon.", heroEyebrow: "Data Analytics · AI Product · Business Strategy", heroTitle: "I use mathematical logic<br />to read data clearly,<br /><span class='text-sage'>and connect algorithms</span><br />with business value.", heroTypeText: "I use mathematical logic\nto read data clearly,\nand connect algorithms\nwith business value.", heroIntro: "<span class='font-bold text-ink dark:text-white'>I am Anita XU</span>, a mathematics-trained candidate focused on business analytics, AI product implementation and data-driven workflows.", contact: "Tel", email: "Email", matcherTitle: "AI job fit matcher", jdPlaceholder: "Paste a job description to see fit score...", matchButton: "Run match", score: "Score", matchResult: "Match result" }
+      zh: { download: "下载简历", contactButton: "联系我", contactPopupTitle: "我的邮箱", contactPopupHint: "欢迎通过邮件联系我，我会尽快回复。", heroEyebrow: "Data Analytics · AI Product · Business Strategy", heroTitle: "以数学之逻辑<br />解构数据之美，<br /><span class='text-sage'>在算法与商业之间</span><br />构建 AI 产品价值。", heroTypeText: "Anita XU，来自香港中文大学，数学背景的 AI / 数据驱动型候选人，聚焦数据商业分析与智能产品落地。", heroIntro: "<span class='font-bold text-ink dark:text-white'>Anita XU</span>，来自香港中文大学，数学背景的 AI / 数据驱动型候选人，聚焦数据商业分析与智能产品落地。", contact: "电话", email: "邮箱", matcherTitle: "AI 岗位匹配筛选器", jdPlaceholder: "粘贴职位描述，查看匹配度...", matchButton: "开始匹配", score: "综合分", matchResult: "匹配结果" },
+      en: { download: "Download CV", contactButton: "Contact me", contactPopupTitle: "My email", contactPopupHint: "Feel free to reach out by email. I will get back to you soon.", heroEyebrow: "Data Analytics · AI Product · Business Strategy", heroTitle: "I use mathematical logic<br />to read data clearly,<br /><span class='text-sage'>and connect algorithms</span><br />with business value.", heroTypeText: "I am Anita XU, a mathematics-trained candidate from The Chinese University of Hong Kong, focused on business analytics, AI product implementation and data-driven workflows.", heroIntro: "<span class='font-bold text-ink dark:text-white'>I am Anita XU</span>, a mathematics-trained candidate from The Chinese University of Hong Kong, focused on business analytics, AI product implementation and data-driven workflows.", contact: "Tel", email: "Email", matcherTitle: "AI job fit matcher", jdPlaceholder: "Paste a job description to see fit score...", matchButton: "Run match", score: "Score", matchResult: "Match result" }
     };
 
     const SectionTitle = {
@@ -503,7 +501,7 @@
         ];
 
         const internships = [
-          { time: "2026.04 – 至今", company: "睿智合创（北京）科技有限公司", role: "数字化运营实习生", points: ["参与风控模型全生命周期数据管理体系建设，围绕授信策略、额度管理等金融业务规则，梳理业务需求并转化为标准化 PRD，支持模型验证、数据监控与风险策略迭代。", "设计数据采集、清洗、特征存储与质量校验流程，使用 SQL / ClickHouse 搭建底层数据监控台账，统一多项目数据口径，提升模型输入数据的准确性与时效性。","	针对大数据评分模型验证中依赖人工、核对流程繁琐的问题，探索基于 Python 的自动化方案，将零散脚本沉淀为可复用模块，推动数据提取、模型验证、报告产出的 SOP 化。"] },
+          { time: "2026.04 – 至今", company: "睿智合创（北京）科技有限公司", role: "数字化运营实习生", points: ["参与风控模型全生命周期数据管理体系建设，围绕授信策略、额度管理等金融业务规则，梳理业务需求并转化为标准化 PRD，支持模型验证、数据监控与风险策略迭代。", "设计数据采集、清洗、特征存储与质量校验流程，使用 SQL / ClickHouse 搭建底层数据监控台账，统一多项目数据口径，提升模型输入数据的准确性与时效性。","针对大数据评分模型验证中依赖人工、核对流程繁琐的问题，探索基于 Python 的自动化方案，将零散脚本沉淀为可复用模块，推动数据提取、模型验证、报告产出的 SOP 化。"] },
           { time: "2025.06 – 2025.08", company: "宁波市统计局", role: "服务业统计实习生", points: ["基于统计业务口径，使用 SQL​ 对多源服务业数据进行查询、清洗与合并，完成字段标准化、去重及缺失值校验，沉淀可复用的标准化数据底表，从源头保障数据质量。", "围绕行业运行态势，开展同比/环比、结构占比及贡献度分析，精准提炼关键指标的变化特征，为宏观经济监测提供数据支撑。","熟练运用 Excel Power Query​ 及透视表进行海量数据批量处理，结合函数公式与图表功能，输出规范化业务报表与分析结论。"] },
           { time: "2025.04 – 2025.06", company: "上海钛戈英华科技有限公司", role: "量化研究实习生", points: ["负责亿元级可转债持仓数据监控与基本面跟踪，搭建覆盖开盘、午盘、收盘的交易监控台账，持续输出中证转债指数分析、持仓债盘后扫描与基金周报，辅助投研判断与策略调整。", "使用自动化脚本与 AI Agent 整理市场异动、涨跌归因及退市风险信息，输出每周的“国九条”退市筛查报告，提炼高溢价、回售压力、财务恶化等风险标签，提升监控效率。","沉淀可转债监控工作手册和标准化分析流程，梳理数据更新、指标计算、风险判断和报告输出步骤，降低重复操作成本，支持团队稳定复用。"] },
           { time: "2024.06 – 2024.08", company: "中信期货浙江分公司", role: "营销管理部实习生", points: ["深入期货与代销基金业务逻辑，使用 SQL​ 对多源客户交易、持仓及营收数据进行清洗与整合，完成字段规范化与质量校验，构建高可用的分析数据集，为经营分析提供坚实数据底座。", "构建多维度客户画像与 RFM 分层模型，精准识别高价值客户、活跃客户及潜在流失客户，通过数据打标与分层分析，输出针对性的营销优化建议。","围绕核心业务目标，搭建核心指标追踪体系，显著提升数据分析口径的一致性与可解释性，确保数据洞察能够直接服务于营销策略的制定与迭代。"] },
@@ -511,7 +509,7 @@
         ];
 
         const projects = [
-          { title: "跨境电商智能家居门店订单数据分析与营销策略优化研究", time: "2024.01 – 2024.07", role: "团队 Leader", image: "portfolio-assets/project-ecommerce.png", summary: "主导4万+跨境电商订单的全链路数据分析，通过构建GMV与复购率分析框架、量化验证营销转化效果，并落地KMeans与XGBoost等精细化运营模型，实现数据驱动的营销策略优化与用户LTV提升。", tags: ["KMeans", "XGBoost", "协同过滤", "配对 T 检验"], details: ["商业分析框架搭建：主导处理40,000+笔真实国际订单数据，完成数据清洗、特征工程与多维建模，围绕GMV、客单价、复购率、转化率等电商核心指标，搭建结构化分析体系，系统梳理了用户购买行为与产品销售规律。", "营销效果量化验证：统筹整合Amazon等平台评论、销量及市场数据，回收1000+份有效用户问卷，构建营销效果评估框架；通过对照分析、配对样本T检验、转化率预测，量化验证方案在引流、浏览转化、点击转化上的效果，提炼影响用户决策的核心变量（如价格敏感度、物流时效偏好），同时整理竞品与用户反馈信息，输出可落地的引流、转化与留存优化建议。", "精细化运营模型落地：运用KMeans聚类、购物篮分析、协同过滤、XGBoost回归等方法，分层识别用户偏好、需求弹性及复购特征，支持用户标签体系搭建与精细化运营策略设计，助力店铺提升用户生命周期价值（LTV）。"] },
+          { title: "跨境电商智能家居门店订单数据分析与营销策略优化研究", time: "2024.01 – 2024.07", role: "团队 Leader", image: "portfolio-assets/project-ecommerce.png", summary: "主导4万+跨境电商订单的全链路数据分析，通过构建GMV与复购率分析框架、量化验证营销转化效果，并落地KMeans与XGBoost等精细化运营模型。", tags: ["KMeans", "XGBoost", "协同过滤", "配对 T 检验"], details: ["商业分析框架搭建：主导处理40,000+笔真实国际订单数据，完成数据清洗、特征工程与多维建模，围绕GMV、客单价、复购率、转化率等电商核心指标，搭建结构化分析体系，系统梳理了用户购买行为与产品销售规律。", "营销效果量化验证：统筹整合Amazon等平台评论、销量及市场数据，回收1000+份有效用户问卷，构建营销效果评估框架；通过对照分析、配对样本T检验、转化率预测，量化验证方案在引流、浏览转化、点击转化上的效果，提炼影响用户决策的核心变量（如价格敏感度、物流时效偏好），同时整理竞品与用户反馈信息，输出可落地的引流、转化与留存优化建议。", "精细化运营模型落地：运用KMeans聚类、购物篮分析、协同过滤、XGBoost回归等方法，分层识别用户偏好、需求弹性及复购特征，支持用户标签体系搭建与精细化运营策略设计，助力店铺提升用户生命周期价值（LTV）。"] },
           { title: "闻声科技 - 智能语音声纹识别系统", time: "2023.12 – 2024.09", role: "团队 Core Member", image: "portfolio-assets/project-voiceprint.png", summary: "作为核心成员参与AI声纹识别SaaS平台从0到1落地，通过教育场景需求验证推动EPFM算法实现97.6%准确率，并融合AIGC/多模态技术输出创新产品方案，实现技术能力与产品设计的深度协同。", tags: ["AI 声纹识别", "SaaS 平台", "AIGC", "多模态交互"], details: ["深入教育数字化场景开展用户调研与竞品分析，拆解身份认证流程痛点，通过需求梳理与功能场景验证，支持产品方向设计与商业模式落地，推动EPFM算法在教育场景实现97.6%测试准确率。", "结合行业趋势与用户反馈，研究AIGC、智能体及多模态交互技术在教育身份认证场景的应用，输出融合语音生成、大模型对话的创新产品规划方案，提升产品技术壁垒与用户体验。", "参与产品需求调研、数据分析到方案设计的全链路协同，协助制定项目计划并跟踪研发进度，通过技术可行性评估与风险预判，保障AI能力在业务场景的稳定落地与迭代优化。"] },
           { title: "机器学习模型的自动化超参数优化", time: "2026.01 – 2026.04", role: "个人 Project", image: "portfolio-assets/project-hpo.png", summary: "复现 Restormer 图像去模糊模型，通过构建超参数搜索空间并系统对比贝叶斯优化等策略，结合消融实验验证HPO在有限算力下对模型复原性能的显著提升。", tags: ["PyTorch", "超参数优化", "贝叶斯优化", "图像复原"], details: ["基于 Python / PyTorch 复现图像去模糊任务中的 Restormer 基线模型，搭建完整训练流程。", "围绕学习率、patch size、网络深度、batch size、损失权重等关键参数构建超参数搜索空间。", "系统对比手动调参、Grid Search、Random Search、Bayesian Optimization 等策略，结合收敛曲线、消融实验和可视化结果分析模型性能差异。"] },
           { title: "Enhancing Momentum Strategies via EMD in HK Equities", time: "2026.01 – 2026.04", role: "团队 Leader", image: "portfolio-assets/project-emd.png", summary: "基于Python/R构建港股动量策略回测框架，通过传统与EMD增强策略的对比分析及LLM Agent辅助研究，系统评估参数敏感性并提炼趋势-噪声特征对选股信号的影响。", tags: ["R", "回测框架", "EMD", "LLM Agent", "港股策略"], details: ["基于港股股票池，使用 Python 抓取并清洗前复权日频 OHLCV 数据，搭建可复现实证分析所需的日频面板数据。", "使用 R​ 搭建传统动量与 EMD-enhanced 动量双轨回测框架，实现股票排序、长短组合构建等，在 (J,K) 参数网格下进行系统性的策略表现对比，量化输出年化收益、Sharpe 比率及最大回撤等核心绩效指标。", "运用 LLM Agent 辅助文献梳理、代码调试与结果总结，结合回测的输出来提炼趋势-噪声特征对选股信号的影响机制。"] },
@@ -544,11 +542,7 @@
         }
         function formatHeroType(text) {
           const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-          const lines = escaped.split("\n");
-          if (lines.length > 2) {
-            lines[2] = `<span class="text-sage">${lines[2]}</span>`;
-          }
-          return lines.join("<br />");
+          return escaped.replace("Anita XU", '<span class="font-bold text-ink dark:text-white">Anita XU</span>');
         }
         function startHeroTypewriter() {
           const runId = ++heroTypeRun;
