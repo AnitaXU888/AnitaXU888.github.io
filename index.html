@@ -175,6 +175,17 @@
     }
     .avatar-ring::after { inset: -20px; opacity: .48; }
     .matcher-score-ring { background: conic-gradient(#8DA399 calc(var(--score) * 1%), rgba(141,163,153,.16) 0); }
+    .hero-type-cursor {
+      display: inline-block;
+      width: .08em;
+      height: .86em;
+      margin-left: .08em;
+      border-radius: 999px;
+      background: #8DA399;
+      vertical-align: -.08em;
+      animation: heroCursorBlink 1s steps(2, start) infinite;
+    }
+    @keyframes heroCursorBlink { 50% { opacity: 0; } }
     .fade-enter-active, .fade-leave-active { transition: opacity .25s ease; }
     .fade-enter-from, .fade-leave-to { opacity: 0; }
 
@@ -207,7 +218,7 @@
         <div class="hidden items-center gap-7 md:flex">
           <a v-for="item in navItems" :key="item.id" :href="'#' + item.id" class="nav-item relative font-display text-sm font-bold uppercase tracking-wide text-muted transition hover:text-sage dark:text-slate-200 dark:hover:text-white" :class="{ 'active-nav text-sage dark:text-white': activeSection === item.id }">{{ item.label }}</a>
           <button class="rounded-full border border-sage/40 px-4 py-2 font-display text-xs font-bold text-sage transition hover:bg-sage hover:text-white" @click="toggleLang">{{ lang === 'zh' ? 'EN' : '中' }}</button>
-          <button class="ripple-btn rounded-full border border-sage/40 px-4 py-2 font-display text-xs font-bold text-sage transition hover:bg-sage hover:text-white" @click="downloadPdf">{{ ui.download }}</button>
+          <button class="ripple-btn rounded-full border border-sage/40 px-4 py-2 font-display text-xs font-bold text-sage transition hover:bg-sage hover:text-white" @click="openContact">{{ ui.contactButton }}</button>
           <button class="rounded-full border border-sage/30 p-2 text-muted transition hover:text-sage dark:text-slate-200" @click="toggleDark" :aria-label="isDark ? '切换浅色模式' : '切换暗黑模式'">
             <span class="material-symbols-outlined">{{ isDark ? 'light_mode' : 'dark_mode' }}</span>
           </button>
@@ -236,10 +247,11 @@
       <section id="hero" class="grid min-h-screen items-center gap-12 pb-24 pt-32 lg:grid-cols-[1.05fr_.95fr]">
         <div class="reveal space-y-7">
           <p class="font-display text-sm font-extrabold uppercase tracking-[.24em] text-sage">{{ ui.heroEyebrow }}</p>
-          <h1 class="font-zh text-[3rem] font-bold leading-[1.15] tracking-[-.04em] text-ink dark:text-white md:text-[4.8rem]" v-html="ui.heroTitle"></h1>
+          <h1 class="min-h-[12.5rem] font-zh text-[2.45rem] font-bold leading-[1.16] tracking-[-.04em] text-ink dark:text-white md:min-h-[18.5rem] md:text-[3.65rem]">
+            <span v-html="heroTypedHtml"></span><span class="hero-type-cursor"></span>
+          </h1>
           <div class="grid gap-3 text-base font-medium leading-8 text-muted dark:text-slate-200 md:text-lg">
             <p v-html="ui.heroIntro"></p>
-            <p>{{ ui.contact }} 18868605664 ｜ {{ ui.email }} <a class="text-sage underline decoration-sage/30 underline-offset-4" href="mailto:xuerwen030220@163.com">xuerwen030220@163.com</a></p>
           </div>
           <div class="no-print rounded-[1.5rem] bg-white/72 p-6 shadow-soft ring-1 ring-white/70 dark:bg-darkpanel/70 dark:ring-white/10">
             <div class="flex items-center gap-3"><span class="material-symbols-outlined text-sage">psychology_alt</span><h3 class="font-display text-xl font-extrabold text-ink dark:text-white">{{ ui.matcherTitle }}</h3></div>
@@ -398,6 +410,20 @@
         </article>
       </div>
     </transition>
+
+    <transition name="fade">
+      <div v-if="contactOpen" class="fixed inset-0 z-[96] flex items-center justify-center p-4">
+        <div class="modal-backdrop absolute inset-0" @click="contactOpen = false"></div>
+        <article class="relative w-full max-w-md rounded-[2rem] bg-white p-8 text-center shadow-2xl dark:bg-darkpanel">
+          <button class="absolute right-5 top-5 rounded-full bg-sage/10 p-2 text-sage" @click="contactOpen = false"><span class="material-symbols-outlined">close</span></button>
+          <span class="material-symbols-outlined text-5xl text-sage">alternate_email</span>
+          <h3 class="mt-5 font-display text-2xl font-extrabold text-ink dark:text-white">{{ ui.contactPopupTitle }}</h3>
+          <a class="mt-4 block break-all font-display text-lg font-bold text-sage underline decoration-sage/30 underline-offset-4" href="mailto:xuerwen030220@163.com">xuerwen030220@163.com</a>
+          <p class="mt-4 text-sm leading-7 text-muted dark:text-slate-200">{{ ui.contactPopupHint }}</p>
+        </article>
+      </div>
+    </transition>
+
   </div>
 
   <script type="module">
@@ -405,8 +431,8 @@
 
 
     const dict = {
-      zh: { download: "下载简历", heroEyebrow: "Data Analytics · AI Product · Business Strategy", heroTitle: "以数学之逻辑<br />解构数据之美，<br /><span class='text-sage'>在算法与商业之间</span><br />构建 AI 产品价值。", heroIntro: "<span class='font-bold text-ink dark:text-white'>Anita XU</span>，数学背景的 AI / 数据驱动型候选人，聚焦数据商业分析与智能产品落地。", contact: "电话", email: "邮箱", matcherTitle: "AI 岗位匹配筛选器", jdPlaceholder: "粘贴职位描述，查看匹配度...", matchButton: "开始匹配", score: "综合分", matchResult: "匹配结果" },
-      en: { download: "Download CV", heroEyebrow: "Data Analytics · AI Product · Business Strategy", heroTitle: "I use mathematical logic<br />to read data clearly,<br /><span class='text-sage'>and connect algorithms</span><br />with business value.", heroIntro: "<span class='font-bold text-ink dark:text-white'>I am Anita XU</span>, a mathematics-trained candidate focused on business analytics, AI product implementation and data-driven workflows.", contact: "Tel", email: "Email", matcherTitle: "AI job fit matcher", jdPlaceholder: "Paste a job description to see fit score...", matchButton: "Run match", score: "Score", matchResult: "Match result" }
+      zh: { download: "下载简历", contactButton: "联系我", contactPopupTitle: "我的邮箱", contactPopupHint: "欢迎通过邮件联系我，我会尽快回复。", heroEyebrow: "Data Analytics · AI Product · Business Strategy", heroTitle: "以数学之逻辑<br />解构数据之美，<br /><span class='text-sage'>在算法与商业之间</span><br />构建 AI 产品价值。", heroTypeText: "以数学之逻辑\n解构数据之美，\n在算法与商业之间\n构建 AI 产品价值。", heroIntro: "<span class='font-bold text-ink dark:text-white'>Anita XU</span>，数学背景的 AI / 数据驱动型候选人，聚焦数据商业分析与智能产品落地。", contact: "电话", email: "邮箱", matcherTitle: "AI 岗位匹配筛选器", jdPlaceholder: "粘贴职位描述，查看匹配度...", matchButton: "开始匹配", score: "综合分", matchResult: "匹配结果" },
+      en: { download: "Download CV", contactButton: "Contact me", contactPopupTitle: "My email", contactPopupHint: "Feel free to reach out by email. I will get back to you soon.", heroEyebrow: "Data Analytics · AI Product · Business Strategy", heroTitle: "I use mathematical logic<br />to read data clearly,<br /><span class='text-sage'>and connect algorithms</span><br />with business value.", heroTypeText: "I use mathematical logic\nto read data clearly,\nand connect algorithms\nwith business value.", heroIntro: "<span class='font-bold text-ink dark:text-white'>I am Anita XU</span>, a mathematics-trained candidate focused on business analytics, AI product implementation and data-driven workflows.", contact: "Tel", email: "Email", matcherTitle: "AI job fit matcher", jdPlaceholder: "Paste a job description to see fit score...", matchButton: "Run match", score: "Score", matchResult: "Match result" }
     };
 
     const SectionTitle = {
@@ -452,6 +478,9 @@
         const coverLeaving = ref(false);
         const coverRippling = ref(false);
         const mobileOpen = ref(false);
+        const contactOpen = ref(false);
+        const heroTypedHtml = ref("");
+        let heroTypeRun = 0;
         const activeSection = ref("hero");
         const selectedProject = ref(null);
         const projectTrack = ref(null);
@@ -511,7 +540,39 @@
           lang.value = lang.value === "zh" ? "en" : "zh";
           localStorage.setItem("portfolio-lang", lang.value);
           document.documentElement.lang = lang.value === "zh" ? "zh-CN" : "en";
+          startHeroTypewriter();
         }
+        function formatHeroType(text) {
+          const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          const lines = escaped.split("\n");
+          if (lines.length > 2) {
+            lines[2] = `<span class="text-sage">${lines[2]}</span>`;
+          }
+          return lines.join("<br />");
+        }
+        function startHeroTypewriter() {
+          const runId = ++heroTypeRun;
+          const text = ui.value.heroTypeText;
+          let index = 0;
+          heroTypedHtml.value = "";
+          function tick() {
+            if (runId !== heroTypeRun) return;
+            if (index <= text.length) {
+              heroTypedHtml.value = formatHeroType(text.slice(0, index));
+              index += 1;
+              setTimeout(tick, lang.value === "zh" ? 96 : 52);
+              return;
+            }
+            setTimeout(() => {
+              if (runId !== heroTypeRun) return;
+              index = 0;
+              heroTypedHtml.value = "";
+              setTimeout(tick, 260);
+            }, 3000);
+          }
+          tick();
+        }
+        function openContact() { contactOpen.value = true; }
         function enterSite() {
           coverRippling.value = true;
           setTimeout(() => { coverLeaving.value = true; }, 360);
@@ -594,10 +655,11 @@
 
         onMounted(() => {
           document.documentElement.classList.toggle("dark", isDark.value);
+          startHeroTypewriter();
           nextTick(() => { setupObservers(); setupRipples(); });
         });
 
-        return { lang, ui, isDark, showCover, coverLeaving, coverRippling, coverOrbs, mobileOpen, activeSection, selectedProject, projectTrack, jdText, matcherOpen, matcherScore, matcherLevel, matcherSummary, matcherHighlights, navItems, internships, projects, education, hardSkills, softSkills, honors, toggleLang, toggleDark, enterSite, runMatcher, downloadPdf, openProject, startDrag, onDrag, endDrag };
+        return { lang, ui, isDark, showCover, coverLeaving, coverRippling, coverOrbs, mobileOpen, contactOpen, heroTypedHtml, activeSection, selectedProject, projectTrack, jdText, matcherOpen, matcherScore, matcherLevel, matcherSummary, matcherHighlights, navItems, internships, projects, education, hardSkills, softSkills, honors, toggleLang, toggleDark, openContact, enterSite, runMatcher, downloadPdf, openProject, startDrag, onDrag, endDrag };
       }
     }).mount("#app");
   </script>
