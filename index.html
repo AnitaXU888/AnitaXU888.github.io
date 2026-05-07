@@ -137,17 +137,19 @@
       left: var(--left);
       top: var(--top);
       border-radius: 999px;
-      background: rgba(177, 218, 183, .62);
-      box-shadow: 0 0 22px rgba(177, 218, 183, .58), inset 0 0 10px rgba(255,255,255,.7);
+      background: rgba(177, 218, 183, .34);
+      box-shadow: 0 0 18px rgba(177, 218, 183, .24), inset 0 0 10px rgba(255,255,255,.52);
       animation: floaty var(--duration) ease-in-out infinite;
       animation-delay: var(--delay);
-      opacity: .72;
+      opacity: .46;
+      will-change: transform;
     }
-    .cover-orb:nth-child(3n) { background: rgba(148, 167, 174, .48); box-shadow: 0 0 22px rgba(148, 167, 174, .45); }
-    .cover-orb:nth-child(4n) { background: rgba(214, 173, 148, .48); box-shadow: 0 0 22px rgba(214, 173, 148, .42); }
+    .cover-orb:nth-child(3n) { background: rgba(148, 167, 174, .28); box-shadow: 0 0 18px rgba(148, 167, 174, .22); }
+    .cover-orb:nth-child(4n) { background: rgba(214, 173, 148, .26); box-shadow: 0 0 18px rgba(214, 173, 148, .20); }
     @keyframes floaty {
-      0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-      50% { transform: translate3d(18px, -28px, 0) scale(1.18); }
+      0%, 100% { transform: translate3d(0, 0, 0); }
+      33% { transform: translate3d(var(--dx), var(--dy), 0); }
+      66% { transform: translate3d(var(--dx2), var(--dy2), 0); }
     }
     .cover-ripple {
       position: absolute;
@@ -205,9 +207,20 @@
       animation-delay: var(--delay);
     }
     .wish-bubble:hover { transform: translateY(-8px) scale(1.05); }
+    .wish-bubble.is-drawing { animation: bubbleShuffle .72s ease-in-out infinite; }
+    .wish-bubble.is-picked {
+      border-color: rgba(141, 163, 153, .68);
+      box-shadow: inset 0 0 30px rgba(255,255,255,.62), 0 22px 58px rgba(141,163,153,.24);
+      transform: translateY(-10px) scale(1.08);
+    }
     @keyframes bubbleFloat {
       0%, 100% { translate: 0 0; }
       50% { translate: 0 -18px; }
+    }
+    @keyframes bubbleShuffle {
+      0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+      35% { transform: translate3d(10px, -10px, 0) rotate(6deg) scale(1.06); }
+      70% { transform: translate3d(-8px, 8px, 0) rotate(-5deg) scale(.98); }
     }
     .cursor-trail-dot {
       position: fixed;
@@ -247,11 +260,7 @@
       <div class="relative z-10 mx-auto max-w-4xl text-center">
         <p class="font-display text-sm font-extrabold uppercase tracking-[.35em] text-sage dark:text-slate-200">Anita_XU · Portfolio</p>
         <h1 class="mt-8 font-zh text-5xl font-bold tracking-[-.04em] text-ink dark:text-white md:text-7xl">你好，欢迎了解我</h1>
-        <p class="mx-auto mt-6 max-w-2xl text-base leading-8 text-muted dark:text-slate-200 md:text-lg">
-          <span class="font-zh font-bold text-ink dark:text-white">你好，欢迎了解我</span>
-          <span class="mx-3 text-sage/70">/</span>
-          <span class="font-display font-semibold">Hello, welcome to learn about me.</span>
-        </p>
+        <p class="mx-auto mt-6 max-w-2xl font-display text-base font-semibold leading-8 text-muted dark:text-slate-200 md:text-lg">Hello, welcome to learn about me.</p>
         <button class="ripple-btn mt-10 rounded-full bg-sage px-9 py-4 font-display text-sm font-extrabold tracking-wide text-white shadow-morandi transition hover:bg-clay" @click="enterSite">
           <span class="font-zh">进入主页</span>
           <span class="mx-2 opacity-70">/</span>
@@ -400,10 +409,11 @@
             <div class="max-w-xl">
               <p class="font-display text-sm font-extrabold uppercase tracking-[.2em] text-sage">{{ ui.fortuneKicker }}</p>
               <p class="mt-4 text-lg leading-8 text-muted dark:text-slate-200">{{ ui.fortuneIntro }}</p>
+              <button class="ripple-btn mt-6 rounded-full bg-sage px-7 py-3 font-display text-sm font-extrabold tracking-wide text-white shadow-morandi transition hover:bg-clay disabled:cursor-wait disabled:opacity-70" @click="drawWish" :disabled="isDrawingWish">{{ isDrawingWish ? ui.drawingButton : ui.drawButton }}</button>
               <p v-if="selectedWish" class="mt-6 rounded-[1.4rem] bg-soft p-5 font-zh text-xl font-bold leading-9 text-ink shadow-inner dark:bg-darkbg dark:text-white">{{ selectedWish.text }}</p>
             </div>
             <div class="grid flex-1 grid-cols-3 place-items-center gap-4 sm:grid-cols-4">
-              <button v-for="(wish, index) in wishes" :key="wish.text" class="wish-bubble ripple-btn flex aspect-square w-20 items-center justify-center rounded-full border border-white/70 text-3xl transition duration-300 md:w-24" :style="{'--duration': `${5 + index % 4}s`, '--delay': `${-index * .35}s`}" @click="drawWish(index)" :aria-label="ui.drawAria">
+              <button v-for="(wish, index) in wishes" :key="wish.text" class="wish-bubble flex aspect-square w-20 items-center justify-center rounded-full border border-white/70 text-3xl transition duration-300 md:w-24" :class="{ 'is-drawing': isDrawingWish, 'is-picked': activeWishIndex === index }" :style="{'--duration': `${6 + index % 4}s`, '--delay': `${-index * .35}s`}" @click="drawWish" :aria-label="ui.drawAria">
                 <span>{{ wish.icon }}</span>
               </button>
             </div>
@@ -520,8 +530,10 @@
           honors: { eyebrow: "Honors", title: "证书荣誉" },
           fortune: { eyebrow: "Tiny Reset", title: "解压抽签" }
         },
-        fortuneKicker: "Click a bubble",
-        fortuneIntro: "学习、求职和做项目累了，就戳一个泡泡，抽一条小小的暖心提示。",
+        fortuneKicker: "A tiny pause for visitors",
+        fortuneIntro: "工作和面试安排看久了，也可以在这里暂停几秒。点击抽签，让一个泡泡替你送上一句轻松的小提醒。",
+        drawButton: "抽一条暖心签",
+        drawingButton: "泡泡滚动中...",
         drawAria: "抽一条暖心签"
       },
       en: {
@@ -549,8 +561,10 @@
           honors: { eyebrow: "Honors", title: "Honors & Certificates" },
           fortune: { eyebrow: "Tiny Reset", title: "Stress Relief Draw" }
         },
-        fortuneKicker: "Click a bubble",
-        fortuneIntro: "When studying, job hunting or building projects feels heavy, pop a bubble and draw a gentle note.",
+        fortuneKicker: "A tiny pause for visitors",
+        fortuneIntro: "After a long day of work, hiring reviews or interviews, pause here for a few seconds. Draw a bubble for a small warm note.",
+        drawButton: "Draw a warm note",
+        drawingButton: "Bubbles rolling...",
         drawAria: "Draw a warm note"
       }
     };
@@ -611,8 +625,25 @@
         const matcherSummary = ref("");
         const matcherHighlights = ref([]);
         const selectedWish = ref(null);
+        const isDrawingWish = ref(false);
+        const activeWishIndex = ref(null);
+        let wishTimer = null;
         const dragState = { active: false, startX: 0, scrollLeft: 0 };
-        const coverOrbs = Array.from({ length: 24 }, (_, i) => ({ "--left": `${(i * 37) % 100}%`, "--top": `${(i * 53) % 100}%`, "--size": `${8 + (i % 5) * 5}px`, "--duration": `${5 + (i % 6)}s`, "--delay": `${-(i % 7)}s` }));
+        const coverOrbs = Array.from({ length: 18 }, (_, i) => {
+          const dx = (i % 2 ? 1 : -1) * (22 + (i % 5) * 9);
+          const dy = (i % 3 ? 1 : -1) * (16 + (i % 4) * 8);
+          return {
+            "--left": `${8 + ((i * 29) % 84)}%`,
+            "--top": `${7 + ((i * 47) % 82)}%`,
+            "--size": `${7 + (i % 4) * 4}px`,
+            "--duration": `${12 + (i % 7) * 1.4}s`,
+            "--delay": `${-(i % 9) * 1.15}s`,
+            "--dx": `${dx}px`,
+            "--dy": `${dy}px`,
+            "--dx2": `${dx * -.55}px`,
+            "--dy2": `${dy * .45}px`
+          };
+        });
 
         const content = {
           zh: {
@@ -656,13 +687,14 @@
               { icon: "school", title: "技能证书", detail: "雅思 7.0、CET-6、计算机二级、普通话二甲、高中数学教师资格证" }
             ],
             wishes: [
-              { icon: "🌿", text: "你已经走了很远，今天也可以慢慢来。" },
-              { icon: "🫧", text: "深呼吸一下，灵感会在松弛的时候回来。" },
-              { icon: "🍵", text: "先照顾好自己，再去解决世界给你的题。" },
-              { icon: "✨", text: "你的努力不是白费，它正在悄悄变成底气。" },
-              { icon: "☁️", text: "允许自己暂停一下，暂停不是退步。" },
-              { icon: "🌙", text: "今晚把焦虑放轻一点，明天会有新的答案。" },
-              { icon: "🎈", text: "你比自己想象中更有韧性，也更值得被看见。" }
+              { icon: "🌿", text: "辛苦浏览到这里，愿你今天的工作也有一个柔软的收尾。" },
+              { icon: "🫧", text: "忙碌的判断里，也可以给自己留一口慢慢呼吸的空间。" },
+              { icon: "🍵", text: "如果今天看了很多材料，希望这一页能让你短暂放松一下。" },
+              { icon: "✨", text: "愿每一次认真筛选，都能遇见值得期待的人和机会。" },
+              { icon: "☁️", text: "工作再满，也别忘了抬头看看窗外，换一换心情。" },
+              { icon: "🌙", text: "愿今天剩下的任务变轻一点，效率和好心情都在线。" },
+              { icon: "🎈", text: "谢谢你停留在这里，愿这几秒钟像一个小小的缓冲垫。" },
+              { icon: "🪄", text: "愿你在一堆信息里，很快看见清晰、合适和值得相信的答案。" }
             ]
           },
           en: {
@@ -706,13 +738,14 @@
               { icon: "school", title: "Certificates", detail: "IELTS 7.0, CET-6, NCRE Level 2, Mandarin Level 2A, High School Mathematics Teacher Qualification" }
             ],
             wishes: [
-              { icon: "🌿", text: "You have already come a long way. It is okay to move gently today." },
-              { icon: "🫧", text: "Take one slow breath. Good ideas often return when your mind softens." },
-              { icon: "🍵", text: "Care for yourself first, then solve the problem in front of you." },
-              { icon: "✨", text: "Your effort is not wasted. It is quietly becoming confidence." },
-              { icon: "☁️", text: "A pause is not a step backward. It is part of staying steady." },
-              { icon: "🌙", text: "Let tonight be a little lighter. Tomorrow can bring a new answer." },
-              { icon: "🎈", text: "You are more resilient than you think, and more visible than you know." }
+              { icon: "🌿", text: "Thank you for reading this far. May the rest of your workday feel a little lighter." },
+              { icon: "🫧", text: "In the middle of many decisions, may you still find a quiet second to breathe." },
+              { icon: "🍵", text: "If you have reviewed many profiles today, I hope this page gives you a small pause." },
+              { icon: "✨", text: "May every careful review lead you closer to people and possibilities worth meeting." },
+              { icon: "☁️", text: "Even on a full workday, a tiny reset can make the next task clearer." },
+              { icon: "🌙", text: "May your remaining tasks feel lighter, with both focus and calm on your side." },
+              { icon: "🎈", text: "Thanks for stopping here. Let these few seconds be a soft little buffer." },
+              { icon: "🪄", text: "May the right signal stand out clearly from all the information in front of you." }
             ]
           }
         };
@@ -732,6 +765,9 @@
           localStorage.setItem("portfolio-lang", lang.value);
           document.documentElement.lang = lang.value === "zh" ? "zh-CN" : "en";
           selectedWish.value = null;
+          activeWishIndex.value = null;
+          isDrawingWish.value = false;
+          if (wishTimer) clearInterval(wishTimer);
           startHeroTypewriter();
         }
         function formatHeroType(text) {
@@ -761,8 +797,23 @@
           tick();
         }
         function drawWish() {
+          if (isDrawingWish.value) return;
           const pool = wishes.value;
-          selectedWish.value = pool[Math.floor(Math.random() * pool.length)];
+          selectedWish.value = null;
+          isDrawingWish.value = true;
+          let ticks = 0;
+          if (wishTimer) clearInterval(wishTimer);
+          wishTimer = setInterval(() => {
+            activeWishIndex.value = Math.floor(Math.random() * pool.length);
+            ticks += 1;
+            if (ticks >= 14) {
+              clearInterval(wishTimer);
+              wishTimer = null;
+              activeWishIndex.value = Math.floor(Math.random() * pool.length);
+              selectedWish.value = pool[activeWishIndex.value];
+              setTimeout(() => { isDrawingWish.value = false; }, 220);
+            }
+          }, 95);
         }
         function openContact() { contactOpen.value = true; }
         function enterSite() {
@@ -881,7 +932,7 @@
           nextTick(() => { setupObservers(); setupRipples(); setupCursorTrail(); });
         });
 
-        return { lang, ui, isDark, showCover, coverLeaving, coverRippling, coverOrbs, mobileOpen, contactOpen, heroTypedHtml, activeSection, selectedProject, projectTrack, jdText, matcherOpen, matcherScore, matcherLevel, matcherSummary, matcherHighlights, selectedWish, navItems, internships, projects, education, hardSkills, softSkills, honors, wishes, toggleLang, toggleDark, openContact, drawWish, enterSite, runMatcher, downloadPdf, openProject, startDrag, onDrag, endDrag };
+        return { lang, ui, isDark, showCover, coverLeaving, coverRippling, coverOrbs, mobileOpen, contactOpen, heroTypedHtml, activeSection, selectedProject, projectTrack, jdText, matcherOpen, matcherScore, matcherLevel, matcherSummary, matcherHighlights, selectedWish, isDrawingWish, activeWishIndex, navItems, internships, projects, education, hardSkills, softSkills, honors, wishes, toggleLang, toggleDark, openContact, drawWish, enterSite, runMatcher, downloadPdf, openProject, startDrag, onDrag, endDrag };
       }
     }).mount("#app");
   </script>
