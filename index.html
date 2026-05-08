@@ -103,7 +103,26 @@
     }
     @keyframes ripple { to { transform: scale(3.2); opacity: 0; } }
 
-    .skill-bar span { transform-origin: left; transform: scaleX(0); }
+    .skill-stars {
+      letter-spacing: .12em;
+      text-shadow: 0 6px 18px rgba(141, 163, 153, .18);
+    }
+    .skill-bar {
+      position: relative;
+      box-shadow: inset 0 1px 3px rgba(78, 99, 90, .10);
+    }
+    .skill-bar::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(141, 163, 153, .16), rgba(214, 173, 148, .14));
+    }
+    .skill-bar span {
+      position: relative;
+      transform-origin: left;
+      transform: scaleX(0);
+      box-shadow: 0 6px 18px rgba(141, 163, 153, .18);
+    }
     .skill-bar.is-visible span { transform: scaleX(var(--skill-level)); }
 
     .project-track { cursor: grab; }
@@ -134,6 +153,7 @@
       position: absolute;
       pointer-events: none;
       opacity: .72;
+      will-change: transform, opacity;
     }
     .cover-decor.glow {
       width: var(--size);
@@ -143,6 +163,7 @@
       border-radius: 999px;
       background: radial-gradient(circle at 34% 30%, rgba(255,255,255,.8), rgba(141,163,153,.18) 38%, transparent 72%);
       filter: blur(.2px);
+      animation: coverDecorDrift 9s ease-in-out infinite;
     }
     .cover-decor.ring {
       width: var(--size);
@@ -152,6 +173,7 @@
       border-radius: 999px;
       border: 1px solid rgba(141, 163, 153, .18);
       box-shadow: inset 0 0 0 10px rgba(255,255,255,.18);
+      animation: coverDecorBreath 11s ease-in-out infinite;
     }
     .cover-decor.line {
       width: var(--w);
@@ -160,12 +182,14 @@
       top: var(--top);
       background: linear-gradient(90deg, transparent, rgba(141,163,153,.28), transparent);
       transform: rotate(var(--rotate));
+      animation: coverLineGlow 8s ease-in-out infinite;
     }
     .cover-decor.spark {
       left: var(--left);
       top: var(--top);
       width: 12px;
       height: 12px;
+      animation: coverSparkBreath 7s ease-in-out infinite;
     }
     .cover-decor.spark::before,
     .cover-decor.spark::after {
@@ -178,6 +202,24 @@
     }
     .cover-decor.spark::before { width: 12px; height: 1px; }
     .cover-decor.spark::after { width: 1px; height: 12px; }
+    .cover-decor:nth-child(2n) { animation-delay: -2.4s; }
+    .cover-decor:nth-child(3n) { animation-delay: -4.8s; }
+    @keyframes coverDecorDrift {
+      0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: .54; }
+      50% { transform: translate3d(10px, -8px, 0) scale(1.035); opacity: .76; }
+    }
+    @keyframes coverDecorBreath {
+      0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: .48; }
+      50% { transform: translate3d(-6px, 5px, 0) scale(1.06); opacity: .72; }
+    }
+    @keyframes coverLineGlow {
+      0%, 100% { transform: rotate(var(--rotate)) translateX(0); opacity: .38; }
+      50% { transform: rotate(var(--rotate)) translateX(10px); opacity: .72; }
+    }
+    @keyframes coverSparkBreath {
+      0%, 100% { transform: translate3d(0, 0, 0) scale(.92); opacity: .42; }
+      50% { transform: translate3d(4px, -5px, 0) scale(1.16); opacity: .78; }
+    }
     .cover-ripple {
       position: absolute;
       left: 50%;
@@ -256,14 +298,17 @@
       width: var(--trail-size);
       height: var(--trail-size);
       border-radius: 999px;
-      background: radial-gradient(circle, rgba(141,163,153,.42), rgba(148,167,174,.16) 58%, transparent 72%);
-      box-shadow: 0 0 18px rgba(141, 163, 153, .18);
+      background: radial-gradient(circle, rgba(255,255,255,.72) 0 12%, rgba(141,163,153,.52) 18%, rgba(148,167,174,.22) 56%, transparent 74%);
+      box-shadow: 0 0 22px rgba(141, 163, 153, .28), 0 0 46px rgba(148, 167, 174, .16);
       pointer-events: none;
       transform: translate3d(-120px, -120px, 0);
+      mix-blend-mode: multiply;
       z-index: 60;
     }
     .dark .cursor-trail-dot {
-      background: radial-gradient(circle, rgba(186,216,196,.38), rgba(148,167,174,.12) 58%, transparent 72%);
+      background: radial-gradient(circle, rgba(255,255,255,.38) 0 10%, rgba(186,216,196,.5) 18%, rgba(148,167,174,.22) 58%, transparent 74%);
+      box-shadow: 0 0 24px rgba(186, 216, 196, .22), 0 0 48px rgba(148, 167, 174, .16);
+      mix-blend-mode: screen;
     }
     .fade-enter-active, .fade-leave-active { transition: opacity .25s ease; }
     .fade-enter-from, .fade-leave-to { opacity: 0; }
@@ -395,6 +440,10 @@
                 <p class="mt-2 font-display text-xs font-extrabold uppercase tracking-[.16em] text-sage">{{ project.time }} · {{ project.role }}</p>
                 <h3 class="mt-3 font-display text-2xl font-extrabold leading-tight text-ink dark:text-white">{{ project.title }}</h3>
                 <p class="mt-3 line-clamp-3 text-sm leading-7 text-muted dark:text-slate-200">{{ project.summary }}</p>
+                <p class="mt-4 inline-flex items-center gap-1.5 font-display text-xs font-extrabold uppercase tracking-[.14em] text-sage">
+                  {{ ui.projectClickHint }}
+                  <span class="material-symbols-outlined text-[1rem]">touch_app</span>
+                </p>
                 <div class="mt-5 flex flex-wrap gap-2">
                   <span v-for="tag in project.tags" :key="tag" class="rounded-full bg-sage/12 px-3 py-1 font-display text-xs font-bold text-sage dark:bg-white/10 dark:text-slate-100">{{ tag }}</span>
                 </div>
@@ -555,6 +604,7 @@
         score: "综合分",
         matchResult: "匹配结果",
         dragHint: "拖拽 / 滑动浏览",
+        projectClickHint: "详情请点击",
         hardSkillTitle: "硬技能 Data / Tech",
         softSkillTitle: "软技能 Product / BA",
         footerText: "© 2026 许尔文 Anita_XU · Built with logic, data and product sense.",
@@ -586,6 +636,7 @@
         score: "Score",
         matchResult: "Match result",
         dragHint: "Drag / swipe to browse",
+        projectClickHint: "Click for details",
         hardSkillTitle: "Hard Skills · Data / Tech",
         softSkillTitle: "Soft Skills · Product / BA",
         footerText: "© 2026 Anita XU · Built with logic, data and product sense.",
@@ -624,13 +675,13 @@
         <div class="reveal rounded-[1.5rem] bg-white/78 p-7 shadow-soft ring-1 ring-white/70 dark:bg-darkpanel/70 dark:ring-white/10">
           <h3 class="font-display text-xl font-extrabold text-ink dark:text-white">{{ title }}</h3>
           <div class="mt-7 grid gap-5">
-            <div v-for="skill in skills" :key="skill.name">
+            <div v-for="skill in skills" :key="skill.name" :style="{'--skill-level': skill.level}">
               <div class="mb-2 flex items-center justify-between gap-4">
                 <span class="font-semibold text-muted dark:text-slate-200">{{ skill.name }}</span>
-                <span class="font-display text-xs font-bold text-sage">{{ skill.stars }}</span>
+                <span class="skill-stars font-display text-sm font-extrabold text-sage">{{ skill.stars }}</span>
               </div>
-              <div class="skill-bar h-2 overflow-hidden rounded-full bg-sage/12" :style="{'--skill-level': skill.level}">
-                <span class="block h-full rounded-full bg-gradient-to-r from-sage to-clay transition-transform duration-[1100ms] ease-out"></span>
+              <div class="skill-bar h-2.5 overflow-hidden rounded-full bg-sage/12 dark:bg-white/10" :aria-label="skill.name + ': ' + skill.stars">
+                <span class="block h-full rounded-full bg-gradient-to-r from-sage via-mist to-clay transition-transform duration-[1100ms] ease-out"></span>
               </div>
             </div>
           </div>
@@ -665,6 +716,8 @@
         const activeWishIndex = ref(null);
         let wishTimer = null;
         const dragState = { active: false, startX: 0, scrollLeft: 0 };
+        let revealObserver = null;
+        let sectionObserver = null;
         const content = {
           zh: {
             navItems: [
@@ -692,13 +745,13 @@
             ],
             education: [
               { degree: "硕士（预计 2026.11 毕业）", school: "香港中文大学", major: "数学 - 大数据分析与计算方向", courses: ["人工智能", "机器学习", "深度学习", "计量经济学", "金融分析", "图像处理"], honor: "GPA 3.925/4.0，获学术奖" },
-              { degree: "本科（2021.09 – 2025.06）", school: "杭州师范大学", major: "数学与应用数学", courses: ["概率论", "随机过程", "数值分析", "Python 建模", "数据结构"], honor: "均分 92/100（前 2%）；国家奖学金、浙江省优秀毕业生、10+ 省级竞赛奖项" }
+              { degree: "本科（2021.09 – 2025.06）", school: "杭州师范大学", major: "数学与应用数学", courses: ["概率论", "随机过程", "数值分析", "Python 建模", "数据结构"], honor: "均分 92/100（综合前 2%）" }
             ],
             hardSkills: [
-              { name: "Python", stars: "★★★★★", level: ".96" }, { name: "SQL", stars: "★★★★★", level: ".95" }, { name: "R", stars: "★★★★☆", level: ".82" }, { name: "Matlab", stars: "★★★☆☆", level: ".68" }, { name: "机器学习算法", stars: "★★★★☆", level: ".84" }, { name: "SPSS", stars: "★★★☆☆", level: ".68" }, { name: "Git / Linux", stars: "★★★☆☆", level: ".66" }
+              { name: "Python", stars: "★★★★★", level: "1" }, { name: "SQL", stars: "★★★★☆", level: ".8" }, { name: "R", stars: "★★★★☆", level: ".8" }, { name: "Matlab", stars: "★★★★☆", level: ".8" }, { name: "机器学习算法", stars: "★★★★☆", level: ".8" }, { name: "SPSS", stars: "★★★★★", level: "1" }, { name: "Git / Linux", stars: "★★★☆☆", level: ".6" }
             ],
             softSkills: [
-              { name: "需求调研", stars: "★★★★☆", level: ".84" }, { name: "PRD 输出", stars: "★★★★☆", level: ".82" }, { name: "Figma / Axure 原型", stars: "★★★☆☆", level: ".65" }, { name: "行业洞察", stars: "★★★★☆", level: ".84" }, { name: "策略优化", stars: "★★★★☆", level: ".86" }, { name: "报告撰写", stars: "★★★★★", level: ".95" }
+              { name: "需求调研", stars: "★★★★☆", level: ".8" }, { name: "PRD 输出", stars: "★★★★☆", level: ".8" }, { name: "跨部门沟通", stars: "★★★★☆", level: ".8" }, { name: "Figma / Axure 原型", stars: "★★★☆☆", level: ".6" }, { name: "行业洞察", stars: "★★★★☆", level: ".8" }, { name: "策略优化", stars: "★★★★☆", level: ".8" }, { name: "报告撰写", stars: "★★★★★", level: "1" }
             ],
             honors: [
               { icon: "workspace_premium", title: "奖学金", detail: "国家奖学金、浙江省政府奖学金、校一等奖学金、创新创业奖学金等" },
@@ -743,13 +796,13 @@
             ],
             education: [
               { degree: "MSc, expected Nov 2026", school: "The Chinese University of Hong Kong", major: "Mathematics - Big Data Analytics and Computation", courses: ["Artificial Intelligence", "Machine Learning", "Deep Learning", "Econometrics", "Financial Analysis", "Image Processing"], honor: "GPA 3.925/4.0, academic award recipient" },
-              { degree: "BSc, Sep 2021 – Jun 2025", school: "Hangzhou Normal University", major: "Mathematics and Applied Mathematics", courses: ["Probability", "Stochastic Processes", "Numerical Analysis", "Python Modeling", "Data Structures"], honor: "Average 92/100, top 2%; National Scholarship, Zhejiang Outstanding Graduate, 10+ provincial awards" }
+              { degree: "BSc, Sep 2021 – Jun 2025", school: "Hangzhou Normal University", major: "Mathematics and Applied Mathematics", courses: ["Probability", "Stochastic Processes", "Numerical Analysis", "Python Modeling", "Data Structures"], honor: "Average 92/100, Overall rank top 2%" }
             ],
             hardSkills: [
-              { name: "Python", stars: "★★★★★", level: ".96" }, { name: "SQL", stars: "★★★★★", level: ".95" }, { name: "R", stars: "★★★★☆", level: ".82" }, { name: "Matlab", stars: "★★★☆☆", level: ".68" }, { name: "Machine Learning", stars: "★★★★☆", level: ".84" }, { name: "SPSS", stars: "★★★☆☆", level: ".68" }, { name: "Git / Linux", stars: "★★★☆☆", level: ".66" }
+              { name: "Python", stars: "★★★★★", level: "1" }, { name: "SQL", stars: "★★★★☆", level: ".8" }, { name: "R", stars: "★★★★☆", level: ".8" }, { name: "Matlab", stars: "★★★★☆", level: ".8" }, { name: "Machine Learning", stars: "★★★★☆", level: ".8" }, { name: "SPSS", stars: "★★★★★", level: "1" }, { name: "Git / Linux", stars: "★★★☆☆", level: ".6" }
             ],
             softSkills: [
-              { name: "User Research", stars: "★★★★☆", level: ".84" }, { name: "PRD Writing", stars: "★★★★☆", level: ".82" }, { name: "Figma / Axure", stars: "★★★☆☆", level: ".65" }, { name: "Industry Insight", stars: "★★★★☆", level: ".84" }, { name: "Strategy Optimization", stars: "★★★★☆", level: ".86" }, { name: "Business Reporting", stars: "★★★★★", level: ".95" }
+              { name: "User Research", stars: "★★★★☆", level: ".8" }, { name: "PRD Writing", stars: "★★★★☆", level: ".8" }, { name: "Cross-functional Communication", stars: "★★★★☆", level: ".8" }, { name: "Figma / Axure", stars: "★★★☆☆", level: ".6" }, { name: "Industry Insight", stars: "★★★★☆", level: ".8" }, { name: "Strategy Optimization", stars: "★★★★☆", level: ".8" }, { name: "Business Reporting", stars: "★★★★★", level: "1" }
             ],
             honors: [
               { icon: "workspace_premium", title: "Scholarships", detail: "National Scholarship, Zhejiang Government Scholarship, university first-class scholarship and innovation scholarships" },
@@ -784,11 +837,13 @@
           lang.value = lang.value === "zh" ? "en" : "zh";
           localStorage.setItem("portfolio-lang", lang.value);
           document.documentElement.lang = lang.value === "zh" ? "zh-CN" : "en";
+          selectedProject.value = null;
           selectedWish.value = null;
           activeWishIndex.value = null;
           isDrawingWish.value = false;
           if (wishTimer) clearInterval(wishTimer);
           startHeroTypewriter();
+          nextTick(setupObservers);
         }
         function formatHeroType(text) {
           const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -882,14 +937,17 @@
         }
 
         function setupObservers() {
-          const revealObserver = new IntersectionObserver(entries => {
+          revealObserver?.disconnect();
+          sectionObserver?.disconnect();
+
+          revealObserver = new IntersectionObserver(entries => {
             entries.forEach(entry => {
               if (entry.isIntersecting) entry.target.classList.add("is-visible");
             });
           }, { threshold: .12, rootMargin: "0px 0px -40px 0px" });
           document.querySelectorAll(".reveal, .skill-bar").forEach(el => revealObserver.observe(el));
 
-          const sectionObserver = new IntersectionObserver(entries => {
+          sectionObserver = new IntersectionObserver(entries => {
             entries.forEach(entry => {
               if (entry.isIntersecting) activeSection.value = entry.target.id;
             });
@@ -918,13 +976,14 @@
 
         function setupCursorTrail() {
           if (!window.matchMedia("(pointer: fine)").matches) return;
-          const dots = Array.from({ length: 9 }, (_, index) => {
+          const dots = Array.from({ length: 13 }, (_, index) => {
             const dot = document.createElement("span");
+            const size = 22 - index * 1.05;
             dot.className = "cursor-trail-dot no-print";
-            dot.style.setProperty("--trail-size", `${14 - index * .85}px`);
-            dot.style.opacity = `${.34 - index * .026}`;
+            dot.style.setProperty("--trail-size", `${Math.max(size, 7)}px`);
+            dot.style.opacity = `${Math.max(.48 - index * .026, .18)}`;
             document.body.appendChild(dot);
-            return { el: dot, x: -120, y: -120 };
+            return { el: dot, x: -120, y: -120, size: Math.max(size, 7) };
           });
           const pointer = { x: -120, y: -120 };
           window.addEventListener("mousemove", event => {
@@ -935,9 +994,11 @@
             let x = pointer.x;
             let y = pointer.y;
             dots.forEach((dot, index) => {
-              dot.x += (x - dot.x) * (.24 - index * .012);
-              dot.y += (y - dot.y) * (.24 - index * .012);
-              dot.el.style.transform = `translate3d(${dot.x - 7}px, ${dot.y - 7}px, 0)`;
+              const ease = Math.max(.32 - index * .014, .16);
+              dot.x += (x - dot.x) * ease;
+              dot.y += (y - dot.y) * ease;
+              const pulse = 1 + Math.sin(Date.now() / 260 + index * .48) * .055;
+              dot.el.style.transform = `translate3d(${dot.x - dot.size / 2}px, ${dot.y - dot.size / 2}px, 0) scale(${pulse})`;
               x = dot.x;
               y = dot.y;
             });
