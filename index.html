@@ -390,7 +390,8 @@
           </div>
           <div class="no-print rounded-[1.5rem] bg-white/72 p-6 shadow-soft ring-1 ring-white/70 dark:bg-darkpanel/70 dark:ring-white/10">
             <div class="flex items-center gap-3"><span class="material-symbols-outlined text-sage">psychology_alt</span><h3 class="font-display text-xl font-extrabold text-ink dark:text-white">{{ ui.matcherTitle }}</h3></div>
-            <textarea v-model="jdText" class="mt-5 h-28 w-full resize-none rounded-[1.2rem] border-0 bg-white p-5 text-sm leading-7 text-ink shadow-inner outline-none ring-1 ring-line/70 transition placeholder:text-zinc-400 focus:ring-sage/60 dark:bg-darkbg dark:text-white dark:ring-white/10" :placeholder="ui.jdPlaceholder"></textarea>
+            <textarea v-model="jdText" @input="matcherInputError = ''" class="mt-5 h-28 w-full resize-none rounded-[1.2rem] border-0 bg-white p-5 text-sm leading-7 text-ink shadow-inner outline-none ring-1 ring-line/70 transition placeholder:text-zinc-400 focus:ring-sage/60 dark:bg-darkbg dark:text-white dark:ring-white/10" :placeholder="ui.jdPlaceholder"></textarea>
+            <p v-if="matcherInputError" class="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-300/25 dark:bg-rose-500/10 dark:text-rose-200">{{ matcherInputError }}</p>
             <div class="mt-5 flex flex-wrap gap-4">
               <button class="ripple-btn rounded-full bg-sage px-7 py-3 font-display text-sm font-bold text-white shadow-morandi transition hover:bg-clay disabled:cursor-wait disabled:opacity-75" :disabled="matcherLoading" @click="runMatcher">{{ matcherLoading ? ui.matchingButton : ui.matchButton }}</button>
               <button class="ripple-btn rounded-full bg-ink px-7 py-3 font-display text-sm font-bold text-white transition hover:bg-zinc-800" @click="downloadPdf">{{ ui.download }}</button>
@@ -618,6 +619,7 @@
         jdPlaceholder: "粘贴职位描述，查看匹配度...",
         matchButton: "开始匹配",
         matchingButton: "AI 分析中...",
+        invalidJdHint: "请输入正确且完整的 JD（至少 60 字，并包含岗位职责、任职要求、技能要求中的部分内容）。",
         score: "综合分",
         matchResult: "匹配结果",
         dragHint: "拖拽 / 滑动浏览",
@@ -651,6 +653,7 @@
         jdPlaceholder: "Paste a job description to see fit score...",
         matchButton: "Run match",
         matchingButton: "Analyzing...",
+        invalidJdHint: "Please enter a valid and complete JD (at least 60 characters, with responsibilities, requirements, or required skills).",
         score: "Score",
         matchResult: "Match result",
         dragHint: "Drag / swipe to browse",
@@ -731,6 +734,7 @@
         const matcherHighlights = ref([]);
         const matcherLoading = ref(false);
         const matcherError = ref("");
+        const matcherInputError = ref("");
         const selectedWish = ref(null);
         const isDrawingWish = ref(false);
         const activeWishIndex = ref(null);
@@ -925,6 +929,23 @@
           if (Number.isNaN(n)) return 88;
           return Math.max(80, Math.min(100, Math.round(n)));
         }
+        function isLikelyValidJd(text) {
+          const raw = text || "";
+          const normalized = raw.replace(/\s+/g, " ").trim();
+          if (normalized.length < 60) return false;
+
+          const keywordRegex = /岗位|职责|任职|要求|负责|经验|能力|学历|加分|职位|工作内容|技能|年限|招聘|job|role|responsibilit|requirement|qualification|experience|skills|position|must have|nice to have/i;
+          const hasKeyword = keywordRegex.test(normalized);
+          if (hasKeyword) return true;
+
+          const lineCount = raw.split(/\r?\n/).filter((line) => line.trim()).length;
+          const punctuationCount = (normalized.match(/[;；:：,，。.]/g) || []).length;
+          const tokenCount = normalized.split(" ").filter(Boolean).length;
+
+          if (lineCount >= 3 && punctuationCount >= 2) return true;
+          if (tokenCount >= 12 && /[a-zA-Z]/.test(normalized)) return true;
+          return false;
+        }
         function parseAiJson(rawText) {
           const text = (rawText || "").trim();
           if (!text) throw new Error("Empty AI response");
@@ -1021,15 +1042,14 @@
         }
         async function runMatcher() {
           const jd = jdText.value.trim();
+          matcherInputError.value = "";
           if (!jd) {
-            matcherScore.value = 80;
-            matcherLevel.value = getMatcherLevel(80);
-            matcherSummary.value = lang.value === "en"
-              ? "Please paste a JD first, then run the AI matching analysis."
-              : "请先粘贴 JD，再运行 AI 匹配分析。";
-            matcherHighlights.value = runRuleBasedMatcher("general ai data product role").dimensions;
-            matcherError.value = "";
-            matcherOpen.value = true;
+            matcherInputError.value = ui.value.invalidJdHint;
+            return;
+          }
+
+          if (!isLikelyValidJd(jd)) {
+            matcherInputError.value = ui.value.invalidJdHint;
             return;
           }
 
@@ -1167,7 +1187,7 @@
           nextTick(() => { setupObservers(); setupRipples(); setupCursorTrail(); });
         });
 
-        return { lang, ui, isDark, showCover, coverLeaving, coverRippling, mobileOpen, contactOpen, heroTypedHtml, activeSection, selectedProject, projectTrack, jdText, matcherOpen, matcherScore, matcherLevel, matcherSummary, matcherHighlights, matcherLoading, matcherError, selectedWish, isDrawingWish, activeWishIndex, navItems, internships, projects, education, hardSkills, softSkills, honors, wishes, toggleLang, toggleDark, openContact, drawWish, enterSite, runMatcher, downloadPdf, openProject, startDrag, onDrag, endDrag };
+        return { lang, ui, isDark, showCover, coverLeaving, coverRippling, mobileOpen, contactOpen, heroTypedHtml, activeSection, selectedProject, projectTrack, jdText, matcherOpen, matcherScore, matcherLevel, matcherSummary, matcherHighlights, matcherLoading, matcherError, matcherInputError, selectedWish, isDrawingWish, activeWishIndex, navItems, internships, projects, education, hardSkills, softSkills, honors, wishes, toggleLang, toggleDark, openContact, drawWish, enterSite, runMatcher, downloadPdf, openProject, startDrag, onDrag, endDrag };
       }
     }).mount("#app");
   </script>
