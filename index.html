@@ -929,6 +929,22 @@
           if (Number.isNaN(n)) return 88;
           return Math.max(80, Math.min(100, Math.round(n)));
         }
+        function computeJdSignalScore(jdTextValue) {
+          const jd = (jdTextValue || "").toLowerCase();
+          let signal = 0;
+          if (/python|sql|etl|数据|data|automation|自动化|clickhouse/.test(jd)) signal += 1;
+          if (/ai|agent|llm|aigc|模型|machine learning|深度学习|算法/.test(jd)) signal += 1;
+          if (/产品|prd|需求|stakeholder|沟通|协作|cross[- ]functional/.test(jd)) signal += 1;
+          if (/金融|风控|量化|risk|strategy|trading|credit/.test(jd)) signal += 1;
+          if (/年限|经验|experience|requirement|职责|responsibilit|qualification/.test(jd)) signal += 1;
+          return 80 + signal * 4;
+        }
+        function calibrateMatcherScore(aiScore, jdTextValue) {
+          const ai = normalizeScore(aiScore);
+          const signalScore = computeJdSignalScore(jdTextValue);
+          const blended = ai * 0.58 + signalScore * 0.42;
+          return normalizeScore(blended);
+        }
         function isLikelyValidJd(text) {
           const raw = text || "";
           const normalized = raw.replace(/\s+/g, " ").trim();
@@ -968,8 +984,8 @@
           if (!cfg.endpoint || !cfg.model) throw new Error("Missing AI matcher config");
 
           const schemaHint = lang.value === "en"
-            ? "Return JSON only with fields: score(80-100), summary(one sentence), dimensions(array of exactly 3 items; each item has title and text, include candidate strengths and potential)."
-            : "仅返回 JSON，字段必须是：score(80-100)、summary(一句话结论)、dimensions(长度必须为3的数组，每项含 title 和 text，必须体现候选人优势与潜力)。";
+            ? "Return JSON only with fields: score(80-100), summary(one sentence), dimensions(array of exactly 3 items; each item has title and text, include candidate strengths and potential). Use stricter score distribution: weak fit 80-85, medium fit 86-91, strong fit 92-96, exceptional fit 97-100. Do not default to 95."
+            : "仅返回 JSON，字段必须是：score(80-100)、summary(一句话结论)、dimensions(长度必须为3的数组，每项含 title 和 text，必须体现候选人优势与潜力)。评分要拉开区分度：弱匹配 80-85、中等匹配 86-91、较强匹配 92-96、极强匹配 97-100；不要默认给 95。";
 
           const systemInstruction = lang.value === "en"
             ? "You are a strict recruitment matching analyst. Do not use markdown."
@@ -1059,7 +1075,7 @@
             const result = await fetchAiMatcherResult(jd);
             const dims = Array.isArray(result?.dimensions) ? result.dimensions.slice(0, 3) : [];
             const normalizedDims = dims.length === 3 ? dims : runRuleBasedMatcher(jd).dimensions;
-            const finalScore = normalizeScore(result?.score);
+            const finalScore = calibrateMatcherScore(result?.score, jd);
             matcherScore.value = finalScore;
             matcherLevel.value = getMatcherLevel(finalScore);
             matcherSummary.value = typeof result?.summary === "string" && result.summary.trim()
