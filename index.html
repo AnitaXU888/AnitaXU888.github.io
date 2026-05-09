@@ -391,7 +391,10 @@
           <div class="no-print rounded-[1.5rem] bg-white/72 p-6 shadow-soft ring-1 ring-white/70 dark:bg-darkpanel/70 dark:ring-white/10">
             <div class="flex items-center gap-3"><span class="material-symbols-outlined text-sage">psychology_alt</span><h3 class="font-display text-xl font-extrabold text-ink dark:text-white">{{ ui.matcherTitle }}</h3></div>
             <textarea v-model="jdText" class="mt-5 h-28 w-full resize-none rounded-[1.2rem] border-0 bg-white p-5 text-sm leading-7 text-ink shadow-inner outline-none ring-1 ring-line/70 transition placeholder:text-zinc-400 focus:ring-sage/60 dark:bg-darkbg dark:text-white dark:ring-white/10" :placeholder="ui.jdPlaceholder"></textarea>
-            <div class="mt-5 flex flex-wrap gap-4"><button class="ripple-btn rounded-full bg-sage px-7 py-3 font-display text-sm font-bold text-white shadow-morandi transition hover:bg-clay" @click="runMatcher">{{ ui.matchButton }}</button><button class="ripple-btn rounded-full bg-ink px-7 py-3 font-display text-sm font-bold text-white transition hover:bg-zinc-800" @click="downloadPdf">{{ ui.download }}</button></div>
+            <div class="mt-5 flex flex-wrap gap-4">
+              <button class="ripple-btn rounded-full bg-sage px-7 py-3 font-display text-sm font-bold text-white shadow-morandi transition hover:bg-clay disabled:cursor-wait disabled:opacity-75" :disabled="matcherLoading" @click="runMatcher">{{ matcherLoading ? ui.matchingButton : ui.matchButton }}</button>
+              <button class="ripple-btn rounded-full bg-ink px-7 py-3 font-display text-sm font-bold text-white transition hover:bg-zinc-800" @click="downloadPdf">{{ ui.download }}</button>
+            </div>
           </div>
         </div>
         <div class="reveal flex flex-col items-center justify-center">
@@ -558,6 +561,7 @@
             <div class="flex-1 pr-8">
               <h3 class="font-display text-2xl font-extrabold text-ink dark:text-white">{{ ui.matchResult }}</h3>
               <p class="mt-3 leading-7 text-muted dark:text-slate-200">{{ matcherSummary }}</p>
+              <p v-if="matcherError" class="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:border-amber-300/20 dark:bg-amber-500/10 dark:text-amber-200">{{ matcherError }}</p>
               <div class="mt-6 grid gap-3">
                 <div v-for="item in matcherHighlights" :key="item.title" class="rounded-2xl bg-soft p-4 dark:bg-darkbg">
                   <p class="font-display text-sm font-extrabold text-ink dark:text-white">{{ item.title }}</p>
@@ -585,6 +589,18 @@
 
   </div>
 
+  <script>
+    if (!window.AI_MATCHER_CONFIG) {
+      const isLocalHost = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+      window.AI_MATCHER_CONFIG = {
+        endpoint: isLocalHost
+          ? "http://localhost:3000/api/ai-match"
+          : "https://YOUR_BACKEND_DOMAIN/api/ai-match",
+        model: "deepseek-v3"
+      };
+    }
+  </script>
+
   <script type="module">
     const { createApp, ref, computed, onMounted, nextTick } = Vue;
 
@@ -601,6 +617,7 @@
         matcherTitle: "AI 岗位匹配筛选器",
         jdPlaceholder: "粘贴职位描述，查看匹配度...",
         matchButton: "开始匹配",
+        matchingButton: "AI 分析中...",
         score: "综合分",
         matchResult: "匹配结果",
         dragHint: "拖拽 / 滑动浏览",
@@ -633,6 +650,7 @@
         matcherTitle: "AI job fit matcher",
         jdPlaceholder: "Paste a job description to see fit score...",
         matchButton: "Run match",
+        matchingButton: "Analyzing...",
         score: "Score",
         matchResult: "Match result",
         dragHint: "Drag / swipe to browse",
@@ -711,6 +729,8 @@
         const matcherLevel = ref("高度匹配");
         const matcherSummary = ref("");
         const matcherHighlights = ref([]);
+        const matcherLoading = ref(false);
+        const matcherError = ref("");
         const selectedWish = ref(null);
         const isDrawingWish = ref(false);
         const activeWishIndex = ref(null);
@@ -730,7 +750,7 @@
               { id: "fortune", label: "解压抽签" }
             ],
             internships: [
-              { time: "2026.04 – 至今", company: "睿智合创（北京）科技有限公司", role: "数字化运营实习生", points: ["参与风控模型全生命周期数据管理体系建设，围绕授信策略、额度管理等金融业务规则，梳理业务需求并转化为标准化 PRD，支持模型验证、数据监控与风险策略迭代。", "设计数据采集、清洗、特征存储与质量校验流程，使用 SQL / ClickHouse 搭建底层数据监控台账，统一多项目数据口径，提升模型输入数据的准确性与时效性。", "针对大数据评分模型验证中依赖人工、核对流程繁琐的问题，探索基于 Python 的自动化方案，将零散脚本沉淀为可复用模块，推动数据提取、模型验证、报告产出的 SOP 化。"] },
+              { time: "2026.04 – 至今", company: "睿智合创（北京）科技有限公司", role: "数字化运营实习生", points: ["参与风控模型全生命周期数据管理体系建设，围绕授信策略、额度管理等金融业务规则，梳理业务需求并转化为标准 PRD，支持模型验证、数据监控与风险策略迭代。", "设计数据采集、清洗、特征存储与质量校验流程，使用 SQL / ClickHouse 搭建底层数据监控台账，统一多项目数据口径，提升模型输入数据的准确性与时效性。", "针对大数据评分模型验证中依赖人工、核对流程繁琐的问题，探索基于 Python 的自动化方案，将零散脚本沉淀为可复用模块，推动数据提取、模型验证、报告产出的 SOP 化。"] },
               { time: "2025.06 – 2025.08", company: "宁波市统计局", role: "服务业统计实习生", points: ["基于统计业务口径，使用 SQL 对多源服务业数据进行查询、清洗与合并，完成字段标准化、去重及缺失值校验，沉淀可复用的标准化数据底表。", "围绕行业运行态势，开展同比/环比、结构占比及贡献度分析，提炼关键指标变化特征，为宏观经济监测提供数据支撑。", "熟练运用 Excel Power Query 及透视表进行海量数据批量处理，结合函数公式与图表功能，输出规范化业务报表与分析结论。"] },
               { time: "2025.04 – 2025.06", company: "上海钛戈英华科技有限公司", role: "量化研究实习生", points: ["负责亿元级可转债持仓数据监控与基本面跟踪，搭建覆盖开盘、午盘、收盘的交易监控台账，辅助投研判断与策略调整。", "使用自动化脚本与 AI Agent 整理市场异动、涨跌归因及退市风险信息，输出每周退市筛查报告，提升监控效率。", "沉淀可转债监控工作手册和标准化分析流程，梳理数据更新、指标计算、风险判断和报告输出步骤，支持团队稳定复用。"] },
               { time: "2024.06 – 2024.08", company: "中信期货浙江分公司", role: "营销管理部实习生", points: ["深入期货与代销基金业务逻辑，使用 SQL 对客户交易、持仓及营收数据进行清洗整合，构建高可用分析数据集。", "构建多维度客户画像与 RFM 分层模型，识别高价值客户、活跃客户及潜在流失客户，输出营销优化建议。", "围绕核心业务目标搭建指标追踪体系，提升数据分析口径的一致性与可解释性，支持营销策略制定与迭代。"] },
@@ -745,7 +765,7 @@
             ],
             education: [
               { degree: "硕士（预计 2026.11 毕业）", school: "香港中文大学", major: "数学 - 大数据分析与计算方向", courses: ["人工智能", "机器学习", "深度学习", "计量经济学", "金融分析", "图像处理"], honor: "GPA 3.925/4.0，获学术奖" },
-              { degree: "本科（2021.09 – 2025.06）", school: "杭州师范大学", major: "数学与应用数学", courses: ["概率论", "随机过程", "数值分析", "Python 建模", "数据结构"], honor: "均分 92/100（综合前 2%）" }
+              { degree: "本科（2021.09 – 2025.06）", school: "杭州师范大学", major: "数学与应用数学", courses: ["概率论与数理统计", "数学模型", "数值分析", "Python 建模", "数据结构"], honor: "均分 92/100（综合前 2%）" }
             ],
             hardSkills: [
               { name: "Python", stars: "★★★★★", level: "1" }, { name: "SQL", stars: "★★★★☆", level: ".8" }, { name: "R", stars: "★★★★☆", level: ".8" }, { name: "Matlab", stars: "★★★★☆", level: ".8" }, { name: "机器学习算法", stars: "★★★★☆", level: ".8" }, { name: "SPSS", stars: "★★★★★", level: "1" }, { name: "Git / Linux", stars: "★★★☆☆", level: ".6" }
@@ -796,7 +816,7 @@
             ],
             education: [
               { degree: "MSc, expected Nov 2026", school: "The Chinese University of Hong Kong", major: "Mathematics - Big Data Analytics and Computation", courses: ["Artificial Intelligence", "Machine Learning", "Deep Learning", "Econometrics", "Financial Analysis", "Image Processing"], honor: "GPA 3.925/4.0, academic award recipient" },
-              { degree: "BSc, Sep 2021 – Jun 2025", school: "Hangzhou Normal University", major: "Mathematics and Applied Mathematics", courses: ["Probability", "Stochastic Processes", "Numerical Analysis", "Python Modeling", "Data Structures"], honor: "Average 92/100, Overall rank top 2%" }
+              { degree: "BSc, Sep 2021 – Jun 2025", school: "Hangzhou Normal University", major: "Mathematics and Applied Mathematics", courses: ["Probability Theory and Mathematical Statistics", "Mathematical Modelling", "Numerical Analysis", "Python Modeling", "Data Structures"], honor: "Average 92/100, Overall rank top 2%" }
             ],
             hardSkills: [
               { name: "Python", stars: "★★★★★", level: "1" }, { name: "SQL", stars: "★★★★☆", level: ".8" }, { name: "R", stars: "★★★★☆", level: ".8" }, { name: "Matlab", stars: "★★★★☆", level: ".8" }, { name: "Machine Learning", stars: "★★★★☆", level: ".8" }, { name: "SPSS", stars: "★★★★★", level: "1" }, { name: "Git / Linux", stars: "★★★☆☆", level: ".6" }
@@ -896,20 +916,154 @@
           coverLeaving.value = true;
           setTimeout(() => { showCover.value = false; sessionStorage.setItem("cover-seen", "true"); }, 1250);
         }
-        function runMatcher() {
-          const jd = jdText.value.toLowerCase();
-          let score = 82;
-          const hits = [];
-          const add = (cond, pts, title, text) => { if (cond) { score += pts; hits.push({ title, text }); } };
-          add(/ai|agent|aigc|大模型|智能体|算法|标注|prompt|提示词/.test(jd), 6, "AI 工具与产品理解", "有 AI 声纹识别 SaaS、AI Agent 投研工作流和自动化评估方案经历，能把 AI 能力落到具体业务流程。");
-          add(/sql|python|数据|清洗|工程|脚本|自动化|clickhouse/.test(jd), 6, "数据处理与自动化", "长期使用 SQL / Python 做数据清洗、指标体系、模型验证和自动化脚本，适合数据分析和数据工程类实习。");
-          add(/沟通|协作|流程|sop|需求|prd|产品/.test(jd), 4, "需求拆解与协作推进", "能把业务规则转成 PRD、SOP 和标准化流程，也有跨业务与技术团队沟通经验。");
-          add(/金融|风控|投研|量化|策略/.test(jd), 4, "金融与风控场景", "实习覆盖风控模型、可转债投研、期货客户分层和组合优化，对金融数据场景适配度高。");
-          matcherScore.value = Math.min(score, 98);
-          matcherLevel.value = matcherScore.value >= 92 ? "高度匹配" : matcherScore.value >= 86 ? "较高匹配" : "基础匹配";
-          matcherSummary.value = jdText.value.trim() ? "这份 JD 与你的 AI 工具应用、数据处理、自动化脚本和业务需求拆解经历有较强重合。建议重点展示睿智合创的数据管理体系、钛戈英华的 AI Agent 监控工作流，以及声纹识别 SaaS 项目。" : "你还没有粘贴 JD。我先按 AI 产品 / 数据分析 / 数据工程实习的通用要求给出默认匹配结果。";
-          matcherHighlights.value = hits.length ? hits : [{ title: "综合优势", text: "数学与大数据背景扎实，项目覆盖 AI 产品、机器学习、商业分析和金融数据，适合 AI 提效、数据分析和产品落地类岗位。" }, { title: "可迁移能力", text: "能从业务问题出发，完成数据清洗、指标搭建、模型验证、报告输出和 SOP 沉淀。" }];
-          matcherOpen.value = true;
+        function getMatcherLevel(score) {
+          if (lang.value === "en") return score >= 92 ? "Highly Matched" : score >= 86 ? "Good Match" : "Basic Match";
+          return score >= 92 ? "高度匹配" : score >= 86 ? "较高匹配" : "基础匹配";
+        }
+        function normalizeScore(value) {
+          const n = Number(value);
+          if (Number.isNaN(n)) return 88;
+          return Math.max(80, Math.min(100, Math.round(n)));
+        }
+        function parseAiJson(rawText) {
+          const text = (rawText || "").trim();
+          if (!text) throw new Error("Empty AI response");
+          const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+          const payload = fenced ? fenced[1] : text;
+          return JSON.parse(payload);
+        }
+        function buildCandidateSnapshot() {
+          const c = pageContent.value;
+          return {
+            education: c.education,
+            hardSkills: c.hardSkills,
+            softSkills: c.softSkills,
+            internships: c.internships.slice(0, 5),
+            projects: c.projects.slice(0, 5)
+          };
+        }
+        async function fetchAiMatcherResult(jdTextValue) {
+          const cfg = window.AI_MATCHER_CONFIG || {};
+          if (!cfg.endpoint || !cfg.model) throw new Error("Missing AI matcher config");
+
+          const schemaHint = lang.value === "en"
+            ? "Return JSON only with fields: score(80-100), summary(one sentence), dimensions(array of exactly 3 items; each item has title and text, include candidate strengths and potential)."
+            : "仅返回 JSON，字段必须是：score(80-100)、summary(一句话结论)、dimensions(长度必须为3的数组，每项含 title 和 text，必须体现候选人优势与潜力)。";
+
+          const systemInstruction = lang.value === "en"
+            ? "You are a strict recruitment matching analyst. Do not use markdown."
+            : "你是严谨的招聘匹配分析助手，不要输出 markdown。";
+          const userPrompt = `${schemaHint}\n\nJD:\n${jdTextValue}\n\nCandidate profile JSON:\n${JSON.stringify(buildCandidateSnapshot())}`;
+          const normalizedEndpoint = /api\.lkeap\.cloud\.tencent\.com/i.test(cfg.endpoint) && !/\/v1\/chat\/completions$/i.test(cfg.endpoint)
+            ? `${cfg.endpoint.replace(/\/+$/, "")}/v1/chat/completions`
+            : cfg.endpoint;
+          const isDashScopeTextGen = /dashscope\.aliyuncs\.com/i.test(normalizedEndpoint) && /text-generation\/generation/i.test(normalizedEndpoint);
+
+          const headers = { "Content-Type": "application/json" };
+          if (cfg.apiKey) headers.Authorization = `Bearer ${cfg.apiKey}`;
+
+          const requestBody = isDashScopeTextGen
+            ? {
+                model: cfg.model,
+                input: { prompt: `${systemInstruction}\n\n${userPrompt}` },
+                parameters: { temperature: 0.2, result_format: "text" }
+              }
+            : {
+                model: cfg.model,
+                temperature: 0.2,
+                messages: [
+                  { role: "system", content: systemInstruction },
+                  { role: "user", content: userPrompt }
+                ]
+              };
+
+          const response = await fetch(normalizedEndpoint, {
+            method: "POST",
+            headers,
+            body: JSON.stringify(requestBody)
+          });
+          if (!response.ok) throw new Error(`AI HTTP ${response.status}`);
+          const data = await response.json();
+          const contentText =
+            data?.output?.text ||
+            data?.output?.choices?.[0]?.message?.content ||
+            data?.choices?.[0]?.message?.content ||
+            "";
+          return parseAiJson(contentText);
+        }
+
+        function runRuleBasedMatcher(jdTextValue) {
+          const jd = jdTextValue.toLowerCase();
+          let score = 84;
+          if (/ai|agent|aigc|llm|模型|算法|machine learning/.test(jd)) score += 5;
+          if (/sql|python|数据|data|etl|清洗|automation|clickhouse/.test(jd)) score += 5;
+          if (/沟通|协作|stakeholder|cross[- ]functional|prd|产品/.test(jd)) score += 3;
+          if (/金融|风控|量化|strategy|risk/.test(jd)) score += 3;
+          const finalScore = normalizeScore(score);
+          const dimensions = lang.value === "en"
+            ? [
+                { title: "Technical & Data Fit", text: "Strong Python/SQL practice and end-to-end data workflow experience match core analytics and automation expectations." },
+                { title: "Business Translation Ability", text: "Can convert business rules into PRD/SOP and coordinate with different stakeholders, supporting cross-functional delivery." },
+                { title: "Growth Potential", text: "Solid math foundation plus AI product exposure indicate strong potential to grow into higher-complexity AI/data roles." }
+              ]
+            : [
+                { title: "技术与数据能力匹配", text: "在 Python/SQL、数据清洗、自动化流程与指标体系方面经验完整，能快速对齐数据分析和工程类岗位核心要求。" },
+                { title: "业务理解与协同推进", text: "具备将业务规则转化为 PRD/SOP 的能力，也有跨部门协作经验，适合承担业务到落地的连接角色。" },
+                { title: "成长潜力", text: "数学背景扎实且覆盖 AI 产品实践，具备向更高复杂度的数据智能岗位持续进阶的潜力。" }
+              ];
+          return {
+            score: finalScore,
+            summary: lang.value === "en"
+              ? "The JD shows a solid overall fit, with clear strengths in data execution and strong potential in AI-enabled product work."
+              : "该 JD 与你的整体背景匹配度较高，你在数据执行与 AI 场景落地上优势明显，并具备持续成长潜力。",
+            dimensions
+          };
+        }
+        async function runMatcher() {
+          const jd = jdText.value.trim();
+          if (!jd) {
+            matcherScore.value = 80;
+            matcherLevel.value = getMatcherLevel(80);
+            matcherSummary.value = lang.value === "en"
+              ? "Please paste a JD first, then run the AI matching analysis."
+              : "请先粘贴 JD，再运行 AI 匹配分析。";
+            matcherHighlights.value = runRuleBasedMatcher("general ai data product role").dimensions;
+            matcherError.value = "";
+            matcherOpen.value = true;
+            return;
+          }
+
+          matcherLoading.value = true;
+          matcherError.value = "";
+          try {
+            const result = await fetchAiMatcherResult(jd);
+            const dims = Array.isArray(result?.dimensions) ? result.dimensions.slice(0, 3) : [];
+            const normalizedDims = dims.length === 3 ? dims : runRuleBasedMatcher(jd).dimensions;
+            const finalScore = normalizeScore(result?.score);
+            matcherScore.value = finalScore;
+            matcherLevel.value = getMatcherLevel(finalScore);
+            matcherSummary.value = typeof result?.summary === "string" && result.summary.trim()
+              ? result.summary.trim()
+              : runRuleBasedMatcher(jd).summary;
+            matcherHighlights.value = normalizedDims.map(item => ({
+              title: item?.title || (lang.value === "en" ? "Dimension" : "维度"),
+              text: item?.text || ""
+            }));
+
+          } catch (error) {
+            const fallback = runRuleBasedMatcher(jd);
+            matcherScore.value = fallback.score;
+            matcherLevel.value = getMatcherLevel(fallback.score);
+            matcherSummary.value = fallback.summary;
+            matcherHighlights.value = fallback.dimensions;
+            matcherError.value = lang.value === "en"
+              ? "AI service is not connected yet. Showing local intelligent fallback result."
+              : "AI 服务暂未接通，当前展示本地智能回退结果。";
+            console.warn("Matcher AI fallback:", error);
+          } finally {
+            matcherLoading.value = false;
+            matcherOpen.value = true;
+          }
         }
         function toggleDark() {
           isDark.value = !isDark.value;
@@ -1013,7 +1167,7 @@
           nextTick(() => { setupObservers(); setupRipples(); setupCursorTrail(); });
         });
 
-        return { lang, ui, isDark, showCover, coverLeaving, coverRippling, mobileOpen, contactOpen, heroTypedHtml, activeSection, selectedProject, projectTrack, jdText, matcherOpen, matcherScore, matcherLevel, matcherSummary, matcherHighlights, selectedWish, isDrawingWish, activeWishIndex, navItems, internships, projects, education, hardSkills, softSkills, honors, wishes, toggleLang, toggleDark, openContact, drawWish, enterSite, runMatcher, downloadPdf, openProject, startDrag, onDrag, endDrag };
+        return { lang, ui, isDark, showCover, coverLeaving, coverRippling, mobileOpen, contactOpen, heroTypedHtml, activeSection, selectedProject, projectTrack, jdText, matcherOpen, matcherScore, matcherLevel, matcherSummary, matcherHighlights, matcherLoading, matcherError, selectedWish, isDrawingWish, activeWishIndex, navItems, internships, projects, education, hardSkills, softSkills, honors, wishes, toggleLang, toggleDark, openContact, drawWish, enterSite, runMatcher, downloadPdf, openProject, startDrag, onDrag, endDrag };
       }
     }).mount("#app");
   </script>

@@ -7,6 +7,11 @@
 ```text
 .
 ├── index.html
+├── backend-node/
+│   ├── server.js
+│   ├── package.json
+│   ├── .env.example
+│   └── README.md
 ├── portfolio-assets/
 │   ├── hero.png
 │   ├── project-ecommerce.png
@@ -32,3 +37,4 @@
 - `index.html` 是 GitHub Pages 默认首页，由原来的 `个人介绍网页.html` 复制并改名而来。
 - 页面使用 Tailwind CDN、Vue CDN 和 Google Fonts，部署后需要联网加载这些外部资源。
 - 页面中的“下载简历”按钮当前调用浏览器打印功能，不依赖单独的 PDF 文件。
+- `backend-node/` 是 AI 匹配功能的后端代理，避免在前端暴露云端模型 API Key（当前默认对接腾讯 `api.lkeap.cloud.tencent.com`）。
