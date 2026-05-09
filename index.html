@@ -594,8 +594,8 @@
       const isLocalHost = location.hostname === "localhost" || location.hostname === "127.0.0.1";
       window.AI_MATCHER_CONFIG = {
         endpoint: isLocalHost
-          ? "http://localhost:3000/api/ai-match"
-          : "https://YOUR_BACKEND_DOMAIN/api/ai-match",
+          ? "http://127.0.0.1:8787/api/ai-match"
+          : "https://YOUR_WORKER_DOMAIN/api/ai-match",
         model: "deepseek-v3"
       };
     }

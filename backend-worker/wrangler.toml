@@ -1,0 +1,9 @@
+name = "anita-ai-match-proxy"
+main = "src/index.js"
+compatibility_date = "2026-05-09"
+
+[vars]
+UPSTREAM_API_ENDPOINT = "https://api.lkeap.cloud.tencent.com/v1/chat/completions"
+UPSTREAM_AUTH_SCHEME = "Bearer"
+DEFAULT_MODEL = "deepseek-v3"
+ALLOWED_ORIGINS = "https://anitaxu888.github.io"
