@@ -942,13 +942,13 @@
         function calibrateMatcherScore(aiScore, jdTextValue) {
           const ai = normalizeScore(aiScore);
           const signalScore = computeJdSignalScore(jdTextValue);
-          const signalLevel = Math.round((signalScore - 80) / 4); // 0~5
+          const signalLevel = Math.round((signalScore - 80) / 4); // expected range: 0 to 5
           const blended = normalizeScore(ai * 0.42 + signalScore * 0.58);
           let minBand = 80;
           let maxBand = 86;
 
-          // Requested score bands:
-          // low signal: 80-86; medium signal: 87-92; high signal: 93+
+          // Score bands:
+          // low signal -> 80-86; medium signal -> 87-92; high signal -> 93+
           if (signalLevel <= 1) {
             minBand = 80;
             maxBand = 86;
@@ -962,7 +962,7 @@
 
           let score = Math.max(minBand, Math.min(maxBand, blended));
 
-          // 96+ should be rare: require strongest JD signals and strong AI confidence.
+          // Keep 96+ rare: require strongest JD signals and strong AI confidence.
           if (score >= 96) {
             const jd = (jdTextValue || "").toLowerCase();
             const hasTech = /python|sql|etl|data|数据|clickhouse|自动化|automation/.test(jd);
