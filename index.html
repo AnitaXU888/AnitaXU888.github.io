@@ -948,7 +948,7 @@
           let maxBand = 86;
 
           // Score bands:
-          // low signal -> 80-86; medium signal -> 87-92; high signal -> 93+
+          // low signal -> 80-86; medium signal -> 87-92; high signal -> 93-98
           if (signalLevel <= 1) {
             minBand = 80;
             maxBand = 86;
@@ -957,22 +957,10 @@
             maxBand = 92;
           } else {
             minBand = 93;
-            maxBand = 100;
+            maxBand = 98;
           }
 
-          let score = Math.max(minBand, Math.min(maxBand, blended));
-
-          // Keep 96+ rare: require strongest JD signals and strong AI confidence.
-          if (score >= 96) {
-            const jd = (jdTextValue || "").toLowerCase();
-            const hasTech = /python|sql|etl|data|数据|clickhouse|自动化|automation/.test(jd);
-            const hasAi = /ai|agent|llm|aigc|machine learning|模型|算法|深度学习/.test(jd);
-            const hasDomain = /金融|风控|量化|risk|strategy|credit|产品|prd|stakeholder/.test(jd);
-            const topTier = signalLevel === 5 && ai >= 96 && hasTech && hasAi && hasDomain;
-            if (!topTier) score = 95;
-          }
-
-          return normalizeScore(score);
+          return normalizeScore(Math.max(minBand, Math.min(maxBand, blended)));
         }
         function isLikelyValidJd(text) {
           const raw = text || "";
@@ -1013,8 +1001,8 @@
           if (!cfg.endpoint || !cfg.model) throw new Error("Missing AI matcher config");
 
           const schemaHint = lang.value === "en"
-            ? "Return JSON only with fields: score(80-100), summary(one sentence), dimensions(array of exactly 3 items; each item has title and text, include candidate strengths and potential). Use score bands: low signal 80-86, medium signal 87-92, high signal 93-100. 96+ must be rare and only used for highly specific and strong overlap."
-            : "仅返回 JSON，字段必须是：score(80-100)、summary(一句话结论)、dimensions(长度必须为3的数组，每项含 title 和 text，必须体现候选人优势与潜力)。评分区间要求：低信号 80-86，中信号 87-92，高信号 93-100；其中 96 分以上必须罕见，只有高度具体且强重合时才可给出。";
+            ? "Return JSON only with fields: score(80-100), summary(one sentence), dimensions(array of exactly 3 items; each item has title and text, include candidate strengths and potential). Use score bands: low signal 80-86, medium signal 87-92, high signal 93-98."
+            : "仅返回 JSON，字段必须是：score(80-100)、summary(一句话结论)、dimensions(长度必须为3的数组，每项含 title 和 text，必须体现候选人优势与潜力)。评分区间要求：低信号 80-86，中信号 87-92，高信号 93-98。";
 
           const systemInstruction = lang.value === "en"
             ? "You are a strict recruitment matching analyst. Do not use markdown."
