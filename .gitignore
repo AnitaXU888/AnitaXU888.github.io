@@ -1,4 +1,14 @@
-backend-node/.env
-backend-node/node_modules/
-backend-worker/.wrangler/
-backend-worker/.dev.vars
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Node
+node_modules/
+
+# IDE
+.vscode/
+.idea/
